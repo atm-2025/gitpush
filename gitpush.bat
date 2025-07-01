@@ -1,11 +1,11 @@
 @echo off
 cd /d "%~dp0"
 
-REM ======== CONFIG ========
-set REMOTE_URL=https://github.com/atm-2025/gitpush.git
+REM ========= CONFIG ==========
+set REMOTE_URL=https://github.com/atm-2025/gitpush
 set BRANCH=main
 
-REM ======== INIT IF NEEDED ========
+REM ========= INIT REPO ==========
 if not exist ".git" (
     echo [INFO] Git not initialized. Initializing...
     git init
@@ -13,25 +13,23 @@ if not exist ".git" (
     git branch -M %BRANCH%
 )
 
-REM ======== CHECK FOR ANY CHANGE ========
-git status --porcelain | findstr /r /v "^$" >nul
-IF %ERRORLEVEL% NEQ 0 (
-    REM ======== STAGE, COMMIT, PUSH ========
-    echo [INFO] Adding files...
-    git add .
+REM ========= ALWAYS TRY ADD & COMMIT ==========
+echo [INFO] Adding all files...
+git add .
 
-    for /f %%i in ('powershell -command "Get-Date -Format yyyy-MM-dd_HH-mm-ss"') do set timestamp=%%i
+for /f %%i in ('powershell -command "Get-Date -Format yyyy-MM-dd_HH-mm-ss"') do set timestamp=%%i
 
-    echo [INFO] Committing...
-    git commit -m "Auto commit %timestamp%"
+echo [INFO] Committing...
+git commit -m "Auto commit %timestamp%" 2>nul
 
-    echo [INFO] Pushing...
-    git push -u origin %BRANCH%
-
-    echo [SUCCESS] Upload complete.
+if %ERRORLEVEL% NEQ 0 (
+    echo [INFO] Nothing to commit.
     pause
     exit /b
 )
 
-echo [INFO] No changes to commit.
+echo [INFO] Pushing to GitHub...
+git push -u origin %BRANCH%
+
+echo [SUCCESS] Changes pushed.
 pause
